@@ -1,0 +1,24 @@
+name: my_flutter_app
+description: A new Flutter project.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Add your Flutter dependencies here
+  cupertino_icons: ^1.0.2
+  http: ^1.2.2
+  provider: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  # Specify your assets here
+  assets:
+    - assets/images/
+    - assets/icons/

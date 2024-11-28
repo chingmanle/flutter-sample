@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ./backend/app
+    container_name: fastapi-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MICROSOFT_TRANSLATOR_KEY=your-api-key
+      - MICROSOFT_REGION=your-region
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: flutter-frontend
+    ports:
+      - "8080:80"

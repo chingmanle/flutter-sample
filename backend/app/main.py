@@ -1,30 +1,38 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import requests
+import httpx
+import os
+from dotenv import load_dotenv
+
+# Load API key from .env file
+load_dotenv()
+LIBRE_TRANSLATE_API_KEY = "my-secret-api-keyss"
+
+LIBRE_TRANSLATE_URL = "http://libretranslate:5000"
 
 app = FastAPI()
 
-class TranslationRequest(BaseModel):
-    text: str
-    target_language: str
-
-# Replace these with your Microsoft Translator API details
-MICROSOFT_TRANSLATOR_ENDPOINT = "https://api.cognitive.microsofttranslator.com/translate"
-MICROSOFT_TRANSLATOR_KEY = "YOUR_API_KEY"
-MICROSOFT_REGION = "YOUR_REGION"
+@app.get("/")
+def read_root():
+    return {"message": "Translation API is running!"}
 
 @app.post("/translate/")
-async def translate_text(request: TranslationRequest):
-    headers = {
-        "Ocp-Apim-Subscription-Key": MICROSOFT_TRANSLATOR_KEY,
-        "Ocp-Apim-Subscription-Region": MICROSOFT_REGION,
-        "Content-Type": "application/json"
-    }
-    body = [{"text": request.text}]
-    params = {"to": request.target_language}
+async def translate_text(text: str, target: str, source: str = "auto"):
+    if not LIBRE_TRANSLATE_API_KEY:
+        raise HTTPException(status_code=500, detail="API Key not configured")
 
-    response = requests.post(MICROSOFT_TRANSLATOR_ENDPOINT, headers=headers, params=params, json=body)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    translated_text = response.json()[0]["translations"][0]["text"]
-    return {"translated_text": translated_text}
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{LIBRE_TRANSLATE_URL}/translate",
+            json={
+                "q": text,
+                "source": source,
+                "target": target,
+                "format": "text",
+                "api_key": LIBRE_TRANSLATE_API_KEY  # Secure API key
+            }
+        )
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise HTTPException(status_code=response.status_code, detail="Translation failed")

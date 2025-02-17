@@ -3,11 +3,10 @@ services:
     build:
       context: ./backend/app
     container_name: fastapi-backend
+    depends_on:
+      - libretranslate
     ports:
       - "8000:8000"
-    environment:
-      - MICROSOFT_TRANSLATOR_KEY=your-api-key
-      - MICROSOFT_REGION=your-region
 
   frontend:
     build:
@@ -15,3 +14,25 @@ services:
     container_name: flutter-frontend
     ports:
       - "8080:80"
+
+  libretranslate:
+    container_name: libretranslate
+    image: libretranslate/libretranslate:v1.6.4
+    restart: unless-stopped
+    ports:
+      - "5050:5000"
+    ## Uncomment this for logging in docker compose logs
+    tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]  # Simplified healthcheck
+      interval: 30s
+      retries: 3
+    environment:
+      LT_HOST: 0.0.0.0
+      LT_DEBUG: True
+      LT_API_KEYS: False  # Set an API key (optional)
+    volumes:
+      - libretranslate-data:/home/libretranslate
+
+volumes:
+  libretranslate-data:
